@@ -1,0 +1,16 @@
+{
+    "manifest_version": 3,
+    "name": "CORS Whitelist Toggle",
+    "version": "1.0",
+    "description": "Enable CORS on whitelisted sites",
+    "permissions": ["storage", "webRequest", "webRequestBlocking"],
+    "host_permissions": ["https://*/*", "http://*/*"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "options_page": "options.html"
+  }
+  
