@@ -3,7 +3,7 @@
     "name": "CORS Whitelist Toggle",
     "version": "1.0",
     "description": "Enable CORS on whitelisted sites",
-    "permissions": ["storage", "webRequest", "webRequestBlocking"],
+    "permissions": ["storage", "declarativeNetRequest", "declarativeNetRequestWithHostAccess"],
     "host_permissions": ["https://*/*", "http://*/*"],
     "background": {
       "service_worker": "background.js"
