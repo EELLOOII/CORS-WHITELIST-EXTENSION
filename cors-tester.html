@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Tester</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        fadeIn: "fadeIn 0.5s ease-in-out",
+                        pulse: "pulse 1.5s infinite"
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            "0%": { opacity: "0" },
+                            "100%": { opacity: "1" }
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg transition-all duration-300">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-7 h-7 text-blue-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z"></path>
+            </svg>
+            CORS Tester
+        </h2>
+        <p class="text-gray-600 mb-4 text-sm">Check if a website allows Cross-Origin Resource Sharing (CORS).</p>
+
+        <!-- URL Input -->
+        <div class="border rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all mb-4">
+            <input id="urlInput" type="text" placeholder="Enter URL..." 
+                class="p-3 w-full outline-none border-none text-gray-700" />
+        </div>
+
+        <!-- Method Selection -->
+        <div class="flex justify-between items-center mb-4">
+            <label class="text-gray-700 font-medium">Request Method:</label>
+            <select id="methodSelect" class="p-2 border rounded-lg bg-gray-100 text-gray-700">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+            </select>
+        </div>
+
+        <!-- Request Body (Only for POST) -->
+        <div id="requestBodyContainer" class="hidden">
+            <label class="text-gray-700 font-medium">Request Body:</label>
+            <textarea id="requestBody" rows="3" placeholder="Enter JSON body (for POST only)" 
+                class="p-3 w-full mt-2 border rounded-lg text-gray-700 bg-gray-100"></textarea>
+        </div>
+
+        <!-- Test Button -->
+        <button onclick="testCORS()" class="w-full bg-blue-600 text-white px-5 py-2 font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-md mt-4">
+            Test CORS
+        </button>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="hidden mt-4 text-center text-gray-600 animate-pulse">
+            Checking CORS...
+        </div>
+
+        <!-- Results Box -->
+        <div id="resultContainer" class="hidden bg-gray-50 p-4 rounded-lg border border-gray-300 mt-4 shadow-sm animate-fadeIn">
+            <h3 class="font-semibold text-gray-700">Result</h3>
+            <pre id="result" class="text-sm text-gray-800 mt-2 whitespace-pre-wrap"></pre>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("methodSelect").addEventListener("change", function () {
+            const method = this.value;
+            const requestBodyContainer = document.getElementById("requestBodyContainer");
+            requestBodyContainer.classList.toggle("hidden", method !== "POST");
+        });
+
+        function testCORS() {
+            const url = document.getElementById("urlInput").value.trim();
+            const method = document.getElementById("methodSelect").value;
+            const requestBody = document.getElementById("requestBody").value.trim();
+            const resultDiv = document.getElementById("result");
+            const resultContainer = document.getElementById("resultContainer");
+            const loading = document.getElementById("loading");
+
+            if (!url) {
+                alert("Please enter a URL.");
+                return;
+            }
+
+            resultContainer.classList.add("hidden");
+            loading.classList.remove("hidden");
+
+            const options = {
+                method: method,
+                mode: 'cors',
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            };
+
+            if (method === "POST" && requestBody) {
+                try {
+                    options.body = JSON.stringify(JSON.parse(requestBody));
+                } catch (error) {
+                    alert("Invalid JSON in request body.");
+                    loading.classList.add("hidden");
+                    return;
+                }
+            }
+
+            fetch(url, options)
+                .then(response => {
+                    loading.classList.add("hidden");
+                    resultContainer.classList.remove("hidden");
+
+                    const headers = [...response.headers.entries()]
+                        .map(h => `<span class="text-blue-600">${h[0]}</span>: ${h[1]}`)
+                        .join("<br>");
+
+                    resultDiv.innerHTML = `✅ <span class="font-semibold text-green-600">CORS Allowed!</span><br><br>
+                        <strong>Status:</strong> ${response.status} ${response.statusText}<br><br>
+                        <strong>Headers:</strong><br>${headers}`;
+                })
+                .catch(error => {
+                    loading.classList.add("hidden");
+                    resultContainer.classList.remove("hidden");
+                    resultDiv.innerHTML = `❌ <span class="font-semibold text-red-600">CORS Blocked!</span><br><br>
+                        <strong>Error:</strong> ${error.message}`;
+                    console.error("CORS Error:", error);
+                });
+        }
+    </script>
+</body>
+</html>
